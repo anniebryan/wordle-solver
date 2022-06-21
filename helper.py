@@ -1,3 +1,5 @@
+from wordfreq import word_frequency
+
 filename = "words.txt"
 words = [w.strip() for w in open(filename).readlines()]
 
@@ -151,4 +153,70 @@ def remaining_words(guesses, w=words):
   restricted_letters, restricted_letter_counts, restricted_letter_positions = get_restrictions(guesses)
   return process_guesses(known_letter_counts, known_green_letters, restricted_letters, restricted_letter_counts, restricted_letter_positions, w)
 
+
+def best_guesses(rw, num=3):
+  fs = normalized_frequencies(rw)
+  ew = expected_words_remaining_after_guess(rw, fs)
+  num = min(num, len(ew))
+  sorted_ew = sorted(ew.keys(), key=ew.get)
+  ret_list = []
+  for i in range(num):
+    ret_list.append(sorted_ew[i])
+  return ret_list
+
+def initial_frequencies(rw):
+  fs = {}
+  for w in rw:
+    fs[w] = word_frequency(w, 'en')
+  return fs
+
+def normalized_frequencies(rw):
+  fs = initial_frequencies(rw)
+  sum_fs = sum(fs.values())
+  new_fs = {}
+  for w in fs:
+    new_fs[w] = fs[w]/sum_fs
+  return new_fs
+
+def expected_words_remaining_after_guess(rw, fs):
+  ew = {}
+  for guess in rw:
+    total = 0
+    for answer in rw:
+      p = fs[answer]
+      r = words_remaining_after_guess(guess, answer, rw)
+      total += r*p
+    ew[guess] = total
+  return ew
+
+def words_remaining_after_guess(guess, answer, rw):
+  result = get_result(guess, answer)
+  guesses = [(guess, result)]
+  new_rw = remaining_words(guesses, rw)
+  return len(new_rw)
+
+def get_result(guess, answer):
+  s = {}  # 5-character string of 'b','y','g'
+  for i in range(5):
+    if guess[i] == answer[i]:
+      s[i] = "g"
+    elif guess[i] not in answer:
+      s[i] = "b"
+  if len(s) == 5:
+
+    return f"{s[0]}{s[1]}{s[2]}{s[3]}{s[4]}"
+
+  reduced_guess = {i: ch for i, ch in enumerate(guess) if i not in s}
+  reduced_answer = [ch for i, ch in enumerate(answer) if i not in s or s[i] != "g"]
+
+  i = min(reduced_guess)
+  for i in range(5):
+    if i not in s:
+      ch = reduced_guess[i]
+      if ch in reduced_answer:
+        s[i] = "y"
+        reduced_answer.remove(ch)
+      else:
+        s[i] = "b"
+  return f"{s[0]}{s[1]}{s[2]}{s[3]}{s[4]}"
 
