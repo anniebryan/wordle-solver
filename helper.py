@@ -2,8 +2,7 @@ filename = "words.txt"
 words = [w.strip() for w in open(filename).readlines()]
 
 
-def process_guesses(known_letter_counts, known_green_letters, restricted_letters, restricted_letter_counts, restricted_letter_positions):
-  w = words
+def process_guesses(known_letter_counts, known_green_letters, restricted_letters, restricted_letter_counts, restricted_letter_positions, w=words):
 
   for letter, count in known_letter_counts.items():
     w = contains_n_or_more_of_letter(letter, count, w)
@@ -146,10 +145,10 @@ def get_restrictions(guesses):
   return restricted_letters, restricted_letter_counts, restricted_letter_positions
 
 
-def remaining_words(guesses):
+def remaining_words(guesses, w=words):
   known_letter_counts = get_known_letter_counts(guesses)
   known_green_letters = get_known_green_letters(guesses)
   restricted_letters, restricted_letter_counts, restricted_letter_positions = get_restrictions(guesses)
-  remaining_words = process_guesses(known_letter_counts, known_green_letters, restricted_letters, restricted_letter_counts, restricted_letter_positions)
-  return remaining_words
+  return process_guesses(known_letter_counts, known_green_letters, restricted_letters, restricted_letter_counts, restricted_letter_positions, w)
+
 
